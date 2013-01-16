@@ -148,7 +148,7 @@ class Photo < ActiveRecord::Base
         bits[1], bits[3], bits[0], bits[2] ],
       :group => [ "floor(lat/", lat_step, "), floor(lon/", lon_step, ")" ],
       :order => 'created_at DESC',
-      :limit => 100 )
+      :limit => FIND_IN_AREA_LIMIT)
   end
 
   def self.count_for_status( status, user = nil )

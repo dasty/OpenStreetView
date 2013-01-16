@@ -51,6 +51,9 @@ end
 MIN_APPROVALS=3
 MAX_USER_MODERATORS=10
 
+# Limits amount of pictures simultaneously displayed on the map
+FIND_IN_AREA_LIMIT=100
+
 #require 'mini_magick'
 #require 'exifr'
 
