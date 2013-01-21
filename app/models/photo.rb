@@ -140,15 +140,29 @@ class Photo < ActiveRecord::Base
       return
     end
     bits.map! { |b| b.to_f }
-    lat_step = (bits[1] - bits[3]) / Math.sqrt(FIND_IN_AREA_LIMIT)
-    lon_step = (bits[0] - bits[2]) / Math.sqrt(FIND_IN_AREA_LIMIT)
-    Photo.find( :all,
+
+    # try to obtain all pictures from bbox
+    @result = Photo.find( :all,
       :conditions => [
         "lat IS NOT NULL AND lon IS NOT NULL AND lat >= ? AND lat <= ? AND lon >= ? AND lon <= ? AND status = 'available'",
         bits[1], bits[3], bits[0], bits[2] ],
-      :group => [ "floor(lat/", lat_step, "), floor(lon/", lon_step, ")" ],
-      :order => 'created_at DESC',
       :limit => FIND_IN_AREA_LIMIT)
+
+    if (@result.length >= FIND_IN_AREA_LIMIT)
+      # we hit FIND_IN_AREA_LIMIT - apply group to distribute pictures around whole screen
+
+      lat_step = (bits[1] - bits[3]) / Math.sqrt(FIND_IN_AREA_LIMIT)
+      lon_step = (bits[0] - bits[2]) / Math.sqrt(FIND_IN_AREA_LIMIT)
+
+      @result = Photo.find( :all,
+        :conditions => [
+          "lat IS NOT NULL AND lon IS NOT NULL AND lat >= ? AND lat <= ? AND lon >= ? AND lon <= ? AND status = 'available'",
+          bits[1], bits[3], bits[0], bits[2] ],
+        :group => [ "floor(lat/", lat_step, "), floor(lon/", lon_step, ")" ],
+        :order => 'created_at DESC',
+        :limit => FIND_IN_AREA_LIMIT)
+    end
+    @result
   end
 
   def self.count_for_status( status, user = nil )
